@@ -1,0 +1,19 @@
+try moving VM to other HDD for better loading times in parallel - cpu doesn't seem to be the issue
+try on laptop?
+try loading hearthstone on single vm first before booting any others
+can i get 3+ VMs running with one of the above?
+try SSD? (enough space?)
+
+having 2 VMs running and trying to boot up a third went very, very poorly
+	even after the 3rd was booted up, the first two were unrecoverably lagged, even with some reloading of programs within the VM
+	CPU was still only 50% on all cores, even with an HD twitch stream running
+
+after running blind loop for long enough to probaly get through the tutorial, make modifications to basic mage deck for better win rate
+	add yeti and sen'jin, and any other efficient bodies/big taunts
+	remove mage spells except for intellect
+	maybe also switch to a loop that trades before going face
+		can that loop beat the tutorial?
+	what is the actual winrate of the current loop?
+
+figure out what the minimum requirements are for an 80g friend quest game to count
+	can you just pass turn back several times and concede?
