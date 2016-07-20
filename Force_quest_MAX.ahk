@@ -5,16 +5,20 @@
 ;LogIn()
 ;LogOut()
 ;MakeNewAcct()
-LaunchHS()
+;LaunchHS()
 ;DoTutorial()
-Loop {
-    DumbSpam()
-}
+;Loop {
+;    DumbSpam()
+;}
+;DoPlayMode()
 return
 
 LaunchBNet() {
     RunWait C:\Program Files (x86)\Battle.net\Battle.net Launcher.exe
-    Sleep, 13000
+    WinWait, Battle.net Login, 
+    IfWinNotActive, Battle.net Login, , WinActivate, Battle.net Login, 
+    WinWaitActive, Battle.net Login, 
+    Sleep, 15000
 }
 
 LogIn() {
@@ -27,11 +31,8 @@ LogIn() {
 }
 
 MakeNewAcct() {
-    WinWait, Battle.net Login, 
-    IfWinNotActive, Battle.net Login, , WinActivate, Battle.net Login, 
-    WinWaitActive, Battle.net Login, 
     MouseClick, left,  151,  330 ; click "create new account"
-    Sleep, 3000
+    Sleep, 10000
     WinWait, Battle.net, 
     IfWinNotActive, Battle.net, , WinActivate, Battle.net, 
     WinWaitActive, Battle.net, 
@@ -39,9 +40,9 @@ MakeNewAcct() {
     smurfName := "Prisoner" . smurfRand 
     Send, first{TAB}last{TAB}%smurfName%{SHIFTDOWN}2{SHIFTUP}aol.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
     FileAppend, %smurfName%`n, Z:\Code\Hearthstone\hsSmurfs.txt
-    Sleep, 3000
+    Sleep, 5000
     Send, {TAB}{TAB}Prisoner{TAB}{ENTER}
-    Sleep, 20000
+    Sleep, 40000
 }
 
 LogOut() {
@@ -74,6 +75,7 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     ; MouseClick, left,  266,  472 ; click high play button
     MouseClick, left,  266,  518 ; click low play button
     Sleep, 40000
+    MouseClick, left,  511,  110 ; dismiss quests
 }
 
 DoTutorial() {
@@ -185,4 +187,46 @@ ClickChoose() { ; for practice mode battles
 SelectJaina() {
     MouseClick, left,  277,  407
     Sleep, 2000
+}
+
+DoPlayMode() {
+    MouseClick, left,  370,  184 ; go to play mode
+    Sleep, 5000
+    Loop, 4 { ; need to do 4 play games to get rid of quests
+        ClickChoose() ; this is also where the Play button is
+        Sleep, 60000 ; wait a long time for matchmaking
+        Concede()
+        DismissQuests()
+    }
+}
+
+Concede() {
+    MouseClick, left,  784,  590 ; click menu gear
+    Sleep, 2000
+    MouseClick, left,  429,  215 ; click "concede" Button
+    Sleep, 7000 ; let hero blow up
+}
+
+DismissQuests() {
+    MouseClick, left,  511,  91 ; dismiss exp screen
+    Sleep, 5000
+    MouseClick, left,  511,  100 ; dismiss completed quest
+    Sleep, 5000
+    MouseClick, left,  511,  110 ; dismiss new quest
+    Sleep, 5000
+}
+
+RollForFriendQuest() {
+    MouseClick, left,  162,  529 ; click quest button
+    Sleep, 3000
+    MouseClick, left,  449,  415 ; re-roll middle quest
+    Sleep, 3000
+    CheckForFriendQuest(username)
+}
+
+CheckForFriendQuest(username) {
+    ; check if middle quest is now 80g friend quest
+    ; if it Is
+        ; log this username as having the quest
+    ; log out
 }
