@@ -1,3 +1,5 @@
+#Include tf.ahk
+
 #r::Reload
 
 #w::
@@ -7,27 +9,57 @@
 ;MakeNewAcct()
 ;LaunchHS()
 ;DoTutorial()
-;Loop {
-;    DumbSpam()
-;}
+Loop {
+    DumbSpam()
+}
 ;DoPlayMode()
 return
 
+#x::
+;CloseHS()
+;MakePracticeDeck()
+Loop {
+    LaunchBNet()
+    ResumeSmurf()
+    BringUpSmurf()
+}
+return
+
 LaunchBNet() {
-    RunWait C:\Program Files (x86)\Battle.net\Battle.net Launcher.exe
+    RunWait C:\Program Files\Battle.net\Battle.net Launcher.exe
     WinWait, Battle.net Login, 
     IfWinNotActive, Battle.net Login, , WinActivate, Battle.net Login, 
     WinWaitActive, Battle.net Login, 
     Sleep, 15000
 }
 
-LogIn() {
+ResumeSmurf() {
     Send, {SHIFTDOWN}{TAB}{SHIFTUP} ; go up to username input
-    FileReadLine, smurfEmail, Z:\Code\Hearthstone\hsSmurfs.txt, 1
-    Send, %smurfEmail%@aol.com
-    Send, {TAB}password1
-    Send, {TAB}{TAB}{TAB}{ENTER}
-    Sleep, 15000
+    ;FileReadLine, smurfEmail, Z:\Code\Hearthstone\hsSmurfs.txt, 1
+    FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+    if ErrorLevel ; currentHsSmurf.txt does not exist, so create it
+    {
+        FileAppend, None, C:\currentHsSmurf.txt
+        FileAppend, `nNone, C:\currentHsSmurf.txt
+        smurfEmail = None
+    }
+    if (%smurfEmail% == None) ; make new smurf
+    {
+        ;FileReadLine, smurfEmail, Z:\GitHub\Force_quest_MAX\rerollSmurfs.txt, 1
+        MakeNewAcct()
+        return
+    }
+    else ; if currentHsSmurf.txt is populated, resume where we left off
+    {
+        Send, %smurfEmail%@aol.com
+        Send, {TAB}password1
+        Send, {TAB}{TAB}{TAB}{ENTER}
+        Sleep, 15000
+    }
+}
+
+LogIn() {
+
 }
 
 MakeNewAcct() {
@@ -39,7 +71,9 @@ MakeNewAcct() {
     Random, smurfRand, 100000, 999999
     smurfName := "Prisoner" . smurfRand 
     Send, first{TAB}last{TAB}%smurfName%{SHIFTDOWN}2{SHIFTUP}aol.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
-    FileAppend, %smurfName%`n, Z:\Code\Hearthstone\hsSmurfs.txt
+    ;FileAppend, %smurfName%`n, Z:\Code\Hearthstone\hsSmurfs.txt
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", smurfName)
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "tutorial")
     Sleep, 5000
     Send, {TAB}{TAB}Prisoner{TAB}{ENTER}
     Sleep, 40000
@@ -78,10 +112,49 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     MouseClick, left,  511,  110 ; dismiss quests
 }
 
+CloseHS() {
+    IfWinExist, Hearthstone
+    {
+        WinKill
+    }
+    Sleep, 10000
+    return
+}
+
+BringUpSmurf() {
+    DoTutorial()
+    CloseHS()
+    ResumeSmurf()
+    LaunchHS()
+    MakePracticeDeck()
+    DoPracticeGames()
+    CloseHS()
+    ResumeSmurf()
+    DoPlayMode()
+    RollForFriendQuest()
+    ; smurf is now finished - add to reroll smurfs
+    FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+    FileAppend, smurfEmail`n, Z:\Code\Hearthstone\rerollSmurfs.txt
+    CloseHS()
+    LogOut()
+}
+
 DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
+    Loop, 84 { ; loop for 1 hr, 45 mins - each iteration is 75 seconds
+        DumbSpam()
+    }
+}
+
+DoPracticeGames() {
+    WinWait, Hearthstone,  
+    IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
+    WinWaitActive, Hearthstone, 
+    Loop,  150 { ; loop for 1 hr, 45 mins - each iteration is 75 seconds
+        DumbSpam()
+    }
 }
 
 EndTurn() {
@@ -191,13 +264,15 @@ SelectJaina() {
 
 DoPlayMode() {
     MouseClick, left,  370,  184 ; go to play mode
-    Sleep, 5000
+    Sleep, 15000
     Loop, 4 { ; need to do 4 play games to get rid of quests
         ClickChoose() ; this is also where the Play button is
         Sleep, 60000 ; wait a long time for matchmaking
         Concede()
         DismissQuests()
     }
+    MouseClick, left,  740,  556 ; go back to main menu
+    Sleep, 5000
 }
 
 Concede() {
@@ -209,9 +284,9 @@ Concede() {
 
 DismissQuests() {
     MouseClick, left,  511,  91 ; dismiss exp screen
-    Sleep, 5000
+    Sleep, 10000
     MouseClick, left,  511,  100 ; dismiss completed quest
-    Sleep, 5000
+    Sleep, 10000
     MouseClick, left,  511,  110 ; dismiss new quest
     Sleep, 5000
 }
@@ -221,12 +296,100 @@ RollForFriendQuest() {
     Sleep, 3000
     MouseClick, left,  449,  415 ; re-roll middle quest
     Sleep, 3000
-    CheckForFriendQuest(username)
+    CheckForFriendQuest()
 }
 
-CheckForFriendQuest(username) {
+CheckForFriendQuest() {
     ; check if middle quest is now 80g friend quest
     ; if it Is
         ; log this username as having the quest
     ; log out
+}
+
+MakePracticeDeck() { ; starts from home screen
+    MouseClick, left,  428,  511 ; click "My Collection" button
+    Sleep, 20000
+    MouseClick, left,  674,  56 ; click mage deck
+    Sleep, 3000
+    MouseClick, left,  674,  56 ; click again in case of tutorial popup
+    Sleep, 5000
+    Loop, 30 {
+        MouseClick, left,  731,  73 ; remove cards from deck
+        Sleep, 500
+    }
+    MouseClick, left,  72,  19 ; click basic cards tab
+    Sleep, 5000
+    MouseClick, left,  365,  371 ; acidic slime
+    Sleep, 1000
+    MouseClick, left,  365,  371
+    Sleep, 1000
+    MouseClick, left,  497,  383 ; bloodfen raptor
+    Sleep, 1000
+    MouseClick, left,  497,  383
+    Sleep, 1000
+    MouseClick, left,  573,  278 ; next page
+    Sleep, 3000
+    MouseClick, left,  87,  157 ; bluegill
+    Sleep, 1000
+    MouseClick, left,  86,  169
+    Sleep, 1000
+    MouseClick, left,  211,  404 ; river croc
+    Sleep, 1000
+    MouseClick, left,  211,  404
+    Sleep, 1000
+    MouseClick, left,  578,  284 ; next page
+    Sleep, 3000
+    MouseClick, left,  98,  189 ; ironfur
+    Sleep, 1000
+    MouseClick, left,  98,  189
+    Sleep, 1000
+    MouseClick, left,  493,  167 ; razorfen hunter
+    Sleep, 1000
+    MouseClick, left,  492,  171
+    Sleep, 1000
+    MouseClick, left,  348,  390 ; wolfrider
+    Sleep, 1000
+    MouseClick, left,  364,  391
+    Sleep, 1000
+    MouseClick, left,  524,  377 ; chillwind
+    Sleep, 1000
+    MouseClick, left,  524,  377
+    Sleep, 1000
+    MouseClick, left,  578,  279 ; next page
+    Sleep, 3000
+    MouseClick, left,  93,  180 ; dragonling mechanic
+    Sleep, 1000
+    MouseClick, left,  93,  180
+    Sleep, 1000
+    MouseClick, left,  246,  196 ; gnomish inventor
+    Sleep, 1000
+    MouseClick, left,  246,  196
+    Sleep, 1000
+    MouseClick, left,  74,  381 ; sen'jin
+    Sleep, 1000
+    MouseClick, left,  74,  381
+    Sleep, 1000
+    MouseClick, left,  509,  379 ; darkscale
+    Sleep, 1000
+    MouseClick, left,  509,  379
+    Sleep, 1000
+    MouseClick, left,  577,  280 ; next page
+    Sleep, 3000
+    MouseClick, left,  224,  377 ; boulderfist
+    Sleep, 1000
+    MouseClick, left,  224,  377 
+    Sleep, 1000
+    MouseClick, left,  363,  391 ; lord of the arena
+    Sleep, 1000
+    MouseClick, left,  363,  391
+    Sleep, 1000
+    MouseClick, left,  472,  396 ; rocketeer
+    Sleep, 1000
+    MouseClick, left,  474,  397
+    Sleep, 1000
+    MouseClick, left,  747,  557 ; finish
+    Sleep, 5000
+    MouseClick, left,  747,  557 ; go back to home screen
+    Sleep, 10000
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "practice")
 }
