@@ -3,24 +3,56 @@
 #r::Reload
 
 #w::
-;LaunchBNet()
-;LogIn()
-;LogOut()
-;MakeNewAcct()
-;LaunchHS()
-;DoTutorial()
-Loop {
-    DumbSpam()
+Loop, 6 {
+LaunchBNet()
+RerollLogIn()
+LaunchHS()
+RollForFriendQuest()
+CloseHS()
+LogOut()
 }
-;DoPlayMode()
+    ;CloseHS()
+    ;LaunchHS()
+    ;MakePracticeDeck()
+    ;CloseHS()
+    ;LaunchHS()
+    ;DoPlayMode()
+    ;RollForFriendQuest()
+    ;; smurf is now finished - add to reroll smurfs
+    ;FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+    ;FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+    ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
+    ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
+    ;CloseHS()
+    ;LogOut()
 return
 
 #x::
+
+;Loop, 4 {
+;    DumbSpam()
+;}
 ;CloseHS()
+;LaunchHS()
 ;MakePracticeDeck()
+;DoPracticeGames()
+;CloseHS()
+;LaunchHS()
+;DoPlayMode()
+;RollForFriendQuest()
+;; smurf is now finished - add to reroll smurfs
+;FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+;FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
+;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
+;CloseHS()
+;LogOut()
 Loop {
     LaunchBNet()
     ResumeSmurf()
+    Sleep, 20000
+    MouseClick, left,  70,  492 ; auto update games for new acct
+    Sleep, 5000
     BringUpSmurf()
 }
 return
@@ -34,32 +66,39 @@ LaunchBNet() {
 }
 
 ResumeSmurf() {
-    Send, {SHIFTDOWN}{TAB}{SHIFTUP} ; go up to username input
-    ;FileReadLine, smurfEmail, Z:\Code\Hearthstone\hsSmurfs.txt, 1
     FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+    ;MsgBox, %smurfEmail%
     if ErrorLevel ; currentHsSmurf.txt does not exist, so create it
     {
         FileAppend, None, C:\currentHsSmurf.txt
         FileAppend, `nNone, C:\currentHsSmurf.txt
         smurfEmail = None
     }
-    if (%smurfEmail% == None) ; make new smurf
+    if (smurfEmail = "None") ; make new smurf
     {
-        ;FileReadLine, smurfEmail, Z:\GitHub\Force_quest_MAX\rerollSmurfs.txt, 1
         MakeNewAcct()
         return
     }
     else ; if currentHsSmurf.txt is populated, resume where we left off
     {
-        Send, %smurfEmail%@aol.com
-        Send, {TAB}password1
-        Send, {TAB}{TAB}{TAB}{ENTER}
-        Sleep, 15000
+        LogIn(smurfEmail)
     }
 }
 
-LogIn() {
+RerollLogIn() {
+    FileReadLine, smurfEmail, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt, 1
+    ;TF_ReplaceLine("!" . "C:\currentHsRerollSmurf.txt", "1", "1", smurfEmail)
+    FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+    TF_RemoveLines("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt", 1, 1)
+    LogIn(smurfEmail)
+}
 
+LogIn(smurfEmail) {
+    Send, {SHIFTDOWN}{TAB}{SHIFTUP} ; go up to username input
+    Send, %smurfEmail%@aol.com
+    Send, {TAB}password1
+    Send, {TAB}{TAB}{TAB}{ENTER}
+    Sleep, 15000
 }
 
 MakeNewAcct() {
@@ -71,7 +110,6 @@ MakeNewAcct() {
     Random, smurfRand, 100000, 999999
     smurfName := "Prisoner" . smurfRand 
     Send, first{TAB}last{TAB}%smurfName%{SHIFTDOWN}2{SHIFTUP}aol.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
-    ;FileAppend, %smurfName%`n, Z:\Code\Hearthstone\hsSmurfs.txt
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", smurfName)
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "tutorial")
     Sleep, 5000
@@ -90,7 +128,6 @@ LogOut() {
     ;WinClose, Battle.net
     WinKill, Battle.net
     Sleep, 1000
-    IfWinExist, ahk_class Qt5QWindowIcon 
     {
         MouseClick, left,  29,  157
         Sleep, 100
@@ -110,9 +147,11 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     MouseClick, left,  266,  518 ; click low play button
     Sleep, 40000
     MouseClick, left,  511,  110 ; dismiss quests
+    Sleep, 3000
 }
 
 CloseHS() {
+    Concede() ; otherwise it will reconnect us to our game
     IfWinExist, Hearthstone
     {
         WinKill
@@ -122,19 +161,21 @@ CloseHS() {
 }
 
 BringUpSmurf() {
+    LaunchHS()
     DoTutorial()
     CloseHS()
-    ResumeSmurf()
     LaunchHS()
     MakePracticeDeck()
     DoPracticeGames()
     CloseHS()
-    ResumeSmurf()
+    LaunchHS()
     DoPlayMode()
     RollForFriendQuest()
     ; smurf is now finished - add to reroll smurfs
     FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-    FileAppend, smurfEmail`n, Z:\Code\Hearthstone\rerollSmurfs.txt
+    FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
     CloseHS()
     LogOut()
 }
@@ -143,8 +184,27 @@ DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop, 84 { ; loop for 1 hr, 45 mins - each iteration is 75 seconds
+    Loop, 72 { ; loop for 1 hr, 30 mins - each iteration is 75 seconds
         DumbSpam()
+        IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
+        {
+            LaunchHS()
+            Loop, 13 {
+                DumbSpam()
+            }
+        }
+        IfWinExist, Oops!
+        {
+            IfWinNotActive, Oops!, , WinActivate, Oops!, 
+            WinWaitActive, Oops!, 
+            Sleep, 2000
+            MouseClick, left,  183,  102
+            Sleep, 10000
+            LaunchHS()
+            Loop, 13 {
+                DumbSpam()
+            }
+        }
     }
 }
 
@@ -152,8 +212,31 @@ DoPracticeGames() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop,  150 { ; loop for 1 hr, 45 mins - each iteration is 75 seconds
-        DumbSpam()
+    Loop,  8 { ; try doing 8 games
+        Loop, 12 {
+            DumbSpam()
+        }
+        CloseHS()
+        LaunchHS()
+        IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
+        {
+            LaunchHS()
+            Loop, 12 {
+                DumbSpam()
+            }
+        }
+        IfWinExist, Oops!
+        {
+            IfWinNotActive, Oops!, , WinActivate, Oops!, 
+            WinWaitActive, Oops!, 
+            Sleep, 2000
+            MouseClick, left,  183,  102
+            Sleep, 10000
+            LaunchHS()
+            Loop, 12 {
+                DumbSpam()
+            }
+        }
     }
 }
 
@@ -207,12 +290,16 @@ SpamHeroPower() {
 }
 
 Trade() {
-        Loop, 8 {
-            MouseClick, left, 232+30*a_index, 318
+        Loop, 7 {
+            MouseClick, left, 20+80*a_index, 324
             Sleep, 100
-            Loop, 8 {
+            MouseClick, left, 408, 109
+            Sleep, 20
+            Loop, 7 {
                 ;MouseClick, left, 300+30*a_index, 214
-                MouseClick, left, 540-30*a_index, 214
+                ;MouseClick, left, 540-30*a_index, 214
+                ;MouseClick, left, 630-30*a_index, 214
+                MouseClick, left, 740-80*a_index, 223
                 Sleep, 20
             }
             MouseClick, left, 408, 109
@@ -220,8 +307,8 @@ Trade() {
 }
 
 GoFace() {
-    Loop, 8 {
-        MouseClick, left, 232+40*a_index, 318
+    Loop, 7 {
+        MouseClick, left, 20+80*a_index, 324
         Sleep, 100
         MouseClick, left, 408, 109
         Sleep, 100
@@ -283,12 +370,16 @@ Concede() {
 }
 
 DismissQuests() {
-    MouseClick, left,  511,  91 ; dismiss exp screen
+    MouseClick, left,  511,  50 ; dismiss exp screen
     Sleep, 10000
-    MouseClick, left,  511,  100 ; dismiss completed quest
+    MouseClick, left,  511,  40 ; dismiss completed quest
     Sleep, 10000
-    MouseClick, left,  511,  110 ; dismiss new quest
+    MouseClick, left,  511,  30 ; dismiss new quest
     Sleep, 5000
+    MouseClick, left,  511,  50 ; extra clicks to dismiss settings menus in case opponent conceded first
+    Sleep, 3000
+    MouseClick, left,  511,  40 ; 
+    Sleep, 3000
 }
 
 RollForFriendQuest() {
@@ -391,5 +482,11 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 5000
     MouseClick, left,  747,  557 ; go back to home screen
     Sleep, 10000
+    MouseClick, left,  368,  223 ; click "solo adventures"
+    Sleep, 5000
+    MouseClick, left,  398,  363 ; dismiss "requires unlocking all 9 classes in practice/adventure lobby"
+    Sleep, 5000
+    MouseClick, left,  608,  78 ; select practice mode
+    Sleep, 5000
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "practice")
 }
