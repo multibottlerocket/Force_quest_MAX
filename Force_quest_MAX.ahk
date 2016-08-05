@@ -3,58 +3,52 @@
 #r::Reload
 
 #w::
-Loop, 6 {
-LaunchBNet()
-RerollLogIn()
-LaunchHS()
-RollForFriendQuest()
-CloseHS()
-LogOut()
-}
-    ;CloseHS()
-    ;LaunchHS()
-    ;MakePracticeDeck()
-    ;CloseHS()
-    ;LaunchHS()
-    ;DoPlayMode()
-    ;RollForFriendQuest()
-    ;; smurf is now finished - add to reroll smurfs
-    ;FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-    ;FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
-    ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
-    ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
-    ;CloseHS()
-    ;LogOut()
+SwitchHearthrangerAcct()
+;Loop, 15 {
+;LaunchBNet()
+;RerollLogIn()
+;LaunchHS()
+;RollForFriendQuest()
+;CloseHS()
+;LogOut()
+;}
+;DoPlayMode()
+;RollForFriendQuest()
 return
 
 #x::
-
-;Loop, 4 {
-;    DumbSpam()
-;}
-;CloseHS()
+;LaunchBNet()
+;ResumeSmurf()
 ;LaunchHS()
-;MakePracticeDeck()
-;DoPracticeGames()
+DoTutorial()
+;;Loop, 30 {
+;;    DumbSpam()
+;;}
+CloseHS()
+LaunchHS()
+MakePracticeDeck()
+Loop, {
+    DoPracticeGames()
+}
 ;CloseHS()
 ;LaunchHS()
 ;DoPlayMode()
 ;RollForFriendQuest()
-;; smurf is now finished - add to reroll smurfs
+;;; smurf is now finished - add to reroll smurfs
 ;FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-;FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+;FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
 ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
 ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
 ;CloseHS()
 ;LogOut()
-Loop {
-    LaunchBNet()
-    ResumeSmurf()
-    Sleep, 20000
-    MouseClick, left,  70,  492 ; auto update games for new acct
-    Sleep, 5000
-    BringUpSmurf()
-}
+;Loop {
+;    LaunchBNet()
+;    ResumeSmurf()
+;    Sleep, 20000
+;    MouseClick, left,  70,  492 ; auto update games for new acct
+;    Sleep, 5000
+;    BringUpSmurf()
+;}
 return
 
 LaunchBNet() {
@@ -141,6 +135,8 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     WinWait, Battle.net, 
     IfWinNotActive, Battle.net, , WinActivate, Battle.net, 
     WinWaitActive, Battle.net, 
+    MouseClick, left,  172,  49 ; select "games" tab
+    Sleep, 3000
     MouseClick, left,  45,  419 ; select hearthstone on left bar, 4th entry
     Sleep, 2000
     ; MouseClick, left,  266,  472 ; click high play button
@@ -173,7 +169,7 @@ BringUpSmurf() {
     RollForFriendQuest()
     ; smurf is now finished - add to reroll smurfs
     FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-    FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+    FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
     CloseHS()
@@ -184,7 +180,7 @@ DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop, 72 { ; loop for 1 hr, 30 mins - each iteration is 75 seconds
+    Loop, 78 { 
         DumbSpam()
         IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
         {
@@ -205,6 +201,22 @@ DoTutorial() {
                 DumbSpam()
             }
         }
+        IfWinExist, Blizzard Error
+        {
+            IfWinNotActive, Blizzard Error, , WinActivate, Blizzard Error, 
+            WinWaitActive, Blizzard Error, 
+            Sleep, 2000
+            MouseClick, left,  20,  405 ; don't send to blizz (lol)
+            Sleep, 2000
+            MouseClick, left, 522, 409 ; close window
+            Sleep, 5000
+            LaunchBNet()
+            ResumeSmurf()
+            LaunchHS()
+            Loop, 13 {
+                DumbSpam()
+            }
+        }
     }
 }
 
@@ -212,16 +224,22 @@ DoPracticeGames() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop,  8 { ; try doing 8 games
-        Loop, 12 {
-            DumbSpam()
-        }
+    Loop,  9 { ; try doing 9 games
         CloseHS()
         LaunchHS()
+        MouseClick, left,  368,  223 ; click "solo adventures"
+        Sleep, 10000
+        MouseClick, left,  398,  363 ; dismiss "requires unlocking all 9 classes in practice/adventure lobby"
+        Sleep, 3000
+        MouseClick, left,  608,  78 ; select practice mode
+        Sleep, 3000
+        Loop, 13 {
+            DumbSpam()
+        }
         IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
         {
             LaunchHS()
-            Loop, 12 {
+            Loop, 13 {
                 DumbSpam()
             }
         }
@@ -233,7 +251,23 @@ DoPracticeGames() {
             MouseClick, left,  183,  102
             Sleep, 10000
             LaunchHS()
-            Loop, 12 {
+            Loop, 13 {
+                DumbSpam()
+            }
+        }
+        IfWinExist, Blizzard Error
+        {
+            IfWinNotActive, Blizzard Error, , WinActivate, Blizzard Error, 
+            WinWaitActive, Blizzard Error, 
+            Sleep, 2000
+            MouseClick, left,  20,  405 ; don't send to blizz (lol)
+            Sleep, 2000
+            MouseClick, left, 522, 409 ; close window
+            Sleep, 5000
+            LaunchBNet()
+            ResumeSmurf()
+            LaunchHS()
+            Loop, 13 {
                 DumbSpam()
             }
         }
@@ -245,6 +279,7 @@ EndTurn() {
 }
 
 DumbSpam() {
+    HandToFace()
     DumpHand()
     ClickChoose()
     Sleep, 1000
@@ -253,7 +288,6 @@ DumbSpam() {
     SpamHeroPower()
     GoFace()
     Trade()
-    HandToFace()
     Sleep, 1000
     EndTurn()
     Sleep, 1000
@@ -351,10 +385,10 @@ SelectJaina() {
 
 DoPlayMode() {
     MouseClick, left,  370,  184 ; go to play mode
-    Sleep, 15000
+    Sleep, 20000
     Loop, 4 { ; need to do 4 play games to get rid of quests
         ClickChoose() ; this is also where the Play button is
-        Sleep, 60000 ; wait a long time for matchmaking
+        Sleep, 80000 ; wait a long time for matchmaking
         Concede()
         DismissQuests()
     }
@@ -399,7 +433,7 @@ CheckForFriendQuest() {
 
 MakePracticeDeck() { ; starts from home screen
     MouseClick, left,  428,  511 ; click "My Collection" button
-    Sleep, 20000
+    Sleep, 30000
     MouseClick, left,  674,  56 ; click mage deck
     Sleep, 3000
     MouseClick, left,  674,  56 ; click again in case of tutorial popup
@@ -480,13 +514,29 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 1000
     MouseClick, left,  747,  557 ; finish
     Sleep, 5000
-    MouseClick, left,  747,  557 ; go back to home screen
-    Sleep, 10000
-    MouseClick, left,  368,  223 ; click "solo adventures"
-    Sleep, 5000
-    MouseClick, left,  398,  363 ; dismiss "requires unlocking all 9 classes in practice/adventure lobby"
-    Sleep, 5000
-    MouseClick, left,  608,  78 ; select practice mode
-    Sleep, 5000
+    ;MouseClick, left,  747,  557 ; go back to home screen
+    ;Sleep, 10000
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "practice")
+}
+
+SwitchHearthrangerAcct() {
+    SetTitleMatchMode, 2
+    ;WinWait, ahk_class HwndWrapper, 
+    ;IfWinNotActive, ahk_class HwndWrapper, , WinActivate, ahk_class HwndWrapper, 
+    ;WinWaitActive, ahk_class HwndWrapper, 
+    WinWait, ahk_class HearthRanger.exe, 
+    IfWinNotActive, ahk_class HearthRanger.exe, , WinActivate, ahk_class HearthRanger.exe, 
+    WinWaitActive, ahk_class HearthRanger.exe, 
+    MouseClick, left,  57,  150 ; edit tasks
+    WinWait, Task Editor, 
+    IfWinNotActive, Task Editor, , WinActivate, Task Editor, 
+    WinWaitActive, Task Editor, 
+    Sleep, 2000
+    MouseClick, left,  195,  69
+    Sleep, 2000
+    MouseClick, left,  324,  128
+    Sleep, 2000
+    Send, {CTRLDOWN}a{CTRLUP}mrpack{TAB}{CTRLDOWN}a{CTRLUP}password1
+    MouseClick, left,  652,  554 ; save
+    Sleep, 2000
 }
