@@ -1,35 +1,38 @@
 #Include tf.ahk
 
+xOffset := 15
+yOffset := 28
+
 #r::Reload
 
 #w::
-SwitchHearthrangerAcct()
-;Loop, 15 {
-;LaunchBNet()
-;RerollLogIn()
-;LaunchHS()
-;RollForFriendQuest()
-;CloseHS()
-;LogOut()
-;}
-;DoPlayMode()
-;RollForFriendQuest()
+;MakeHearthrangerPracticeDeck()
+;QuestingLogIn()
+LaunchHearthRanger()
+Loop, {
+    LaunchBNet()
+    QuestingLogIn()
+    LaunchHS()
+    DoPracticeGamesHearthranger()
+    ;DoQuestsHearthranger()
+    CloseHS()
+    LogOut()
+}
+
+;DoPracticeGamesHearthranger()
 return
 
 #x::
 ;LaunchBNet()
 ;ResumeSmurf()
 ;LaunchHS()
-DoTutorial()
-;;Loop, 30 {
-;;    DumbSpam()
-;;}
-CloseHS()
-LaunchHS()
-MakePracticeDeck()
-Loop, {
-    DoPracticeGames()
-}
+;Trade()
+;DoTutorial()
+;CloseHS()
+;LaunchHS()
+;MakePracticeDeck()
+;LaunchHearthRanger()
+;DoPracticeGamesHearthranger()
 ;CloseHS()
 ;LaunchHS()
 ;DoPlayMode()
@@ -41,18 +44,19 @@ Loop, {
 ;TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
 ;CloseHS()
 ;LogOut()
-;Loop {
-;    LaunchBNet()
-;    ResumeSmurf()
-;    Sleep, 20000
-;    MouseClick, left,  70,  492 ; auto update games for new acct
-;    Sleep, 5000
-;    BringUpSmurf()
-;}
+Loop {
+    LaunchBNet()
+    ResumeSmurf()
+    Sleep, 20000
+    MouseClick, left,  70,  492 ; auto update games for new acct
+    Sleep, 5000
+    BringUpSmurf()
+}
 return
 
 LaunchBNet() {
-    RunWait C:\Program Files\Battle.net\Battle.net Launcher.exe
+    ;RunWait C:\Program Files\Battle.net\Battle.net Launcher.exe ; tiny xp
+    RunWait C:\Program Files (x86)\Battle.net\Battle.net Launcher.exe ; win 7 
     WinWait, Battle.net Login, 
     IfWinNotActive, Battle.net Login, , WinActivate, Battle.net Login, 
     WinWaitActive, Battle.net Login, 
@@ -77,6 +81,15 @@ ResumeSmurf() {
     {
         LogIn(smurfEmail)
     }
+}
+
+QuestingLogIn() {
+    FileReadLine, smurfEmail, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt, 1
+    FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
+    TF_RemoveLines("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt", 1, 1)
+    StringSplit, questArray, smurfEmail, %A_Space%
+    ;MsgBox, %questArray1%
+    LogIn(questArray1)
 }
 
 RerollLogIn() {
@@ -141,6 +154,7 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     Sleep, 2000
     ; MouseClick, left,  266,  472 ; click high play button
     MouseClick, left,  266,  518 ; click low play button
+    WinWait, Hearthstone,
     Sleep, 40000
     MouseClick, left,  511,  110 ; dismiss quests
     Sleep, 3000
@@ -157,17 +171,17 @@ CloseHS() {
 }
 
 BringUpSmurf() {
+    ;LaunchHS()
+    ;DoTutorial()
+    ;CloseHS()
     LaunchHS()
-    DoTutorial()
-    CloseHS()
-    LaunchHS()
-    MakePracticeDeck()
-    DoPracticeGames()
+    ;MakePracticeDeck()
+    MakeHearthrangerPracticeDeck()
+    DoPracticeGamesHearthranger()
     CloseHS()
     LaunchHS()
     DoPlayMode()
-    RollForFriendQuest()
-    ; smurf is now finished - add to reroll smurfs
+    ; smurf is now ready to do 10 daily quests - add to questing smurfs
     FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
     FileAppend, %smurfEmail%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
@@ -275,7 +289,7 @@ DoPracticeGames() {
 }
 
 EndTurn() {
-    MouseClick, left,  731,  277 ; end turn
+    MouseClick, left,  721,  277 ; end turn
 }
 
 DumbSpam() {
@@ -296,22 +310,25 @@ DumbSpam() {
 }
 
 DumpHand() {
-        Loop, 8 {
-            MouseClick, left, 202+45*a_index, 580
-            Sleep, 100
-            MouseClick, left, 372+10*a_index, 230
-            Sleep, 100
-        }
-        Loop, 8 {
-            MouseClick, left, 202+45*a_index, 580
-            Sleep, 100
-            MouseClick, left, 452-10*a_index, 230
-            Sleep, 100
-        }
+    global yOffset
+    Loop, 8 {
+        MouseClick, left, 202+45*a_index, 570-yOffset
+        Sleep, 100
+        MouseClick, left, 372+10*a_index, 230
+        Sleep, 100
+    }
+    Loop, 8 {
+        MouseClick, left, 202+45*a_index, 570-yOffset
+        Sleep, 100
+        MouseClick, left, 452-10*a_index, 230
+        Sleep, 100
+    }
 }
 
 SpamHeroPower() {
-    MouseClick, left,  503,  460
+    global xOffset
+    global yOffset
+    MouseClick, left,  503-xOffset,  460-yOffset
     Sleep, 200
     MouseClick, left,  352,  215
     Sleep, 100
@@ -325,10 +342,10 @@ SpamHeroPower() {
 
 Trade() {
         Loop, 7 {
-            MouseClick, left, 20+80*a_index, 324
-            Sleep, 100
+            MouseClick, left, 50+75*a_index, 324
+            Sleep, 150
             MouseClick, left, 408, 109
-            Sleep, 20
+            Sleep, 30
             Loop, 7 {
                 ;MouseClick, left, 300+30*a_index, 214
                 ;MouseClick, left, 540-30*a_index, 214
@@ -342,35 +359,38 @@ Trade() {
 
 GoFace() {
     Loop, 7 {
-        MouseClick, left, 20+80*a_index, 324
-        Sleep, 100
+        MouseClick, left, 50+75*a_index, 324
+        Sleep, 150
         MouseClick, left, 408, 109
-        Sleep, 100
+        Sleep, 150
     }
 }
 
 SpamOpponents() {
-    MouseClick, left,  164,  436
+    MouseClick, left,  164,  420
     Sleep, 100
-    MouseClick, left,  241,  441
+    MouseClick, left,  241,  420
     Sleep, 100
-    MouseClick, left,  355,  424
+    MouseClick, left,  355,  420
     Sleep, 100
-    MouseClick, left,  439,  443
+    MouseClick, left,  400,  420
+    Sleep, 100    
+    MouseClick, left,  439,  420
     Sleep, 100
-    MouseClick, left,  526,  443
+    MouseClick, left,  526,  420
     Sleep, 100
-    MouseClick, left,  634,  443
+    MouseClick, left,  614,  420
     Sleep, 100
 }
 
 HandToFace() {
-        Loop, 8 {
-            MouseClick, left, 202+45*a_index, 580
-            Sleep, 100
-            MouseClick, left, 408, 109
-            Sleep, 100
-        }
+    global yOffset
+    Loop, 8 {
+        MouseClick, left, 202+45*a_index, 570-yOffset
+        Sleep, 100
+        MouseClick, left, 408, 109
+        Sleep, 100
+    }
 }
 
 ClickChoose() { ; for practice mode battles
@@ -397,7 +417,9 @@ DoPlayMode() {
 }
 
 Concede() {
-    MouseClick, left,  784,  590 ; click menu gear
+    global xOffset
+    global yOffset
+    MouseClick, left,  784-xOffset,  585-yOffset ; click menu gear
     Sleep, 2000
     MouseClick, left,  429,  215 ; click "concede" Button
     Sleep, 7000 ; let hero blow up
@@ -431,18 +453,20 @@ CheckForFriendQuest() {
     ; log out
 }
 
-MakePracticeDeck() { ; starts from home screen
+MakePracticeDeck() { ; for blind spam ai; starts from home screen
+    global xOffset
+    global yOffset
     MouseClick, left,  428,  511 ; click "My Collection" button
     Sleep, 30000
-    MouseClick, left,  674,  56 ; click mage deck
+    MouseClick, left,  674-xOffset,  56+yOffset ; click mage deck
     Sleep, 3000
-    MouseClick, left,  674,  56 ; click again in case of tutorial popup
+    MouseClick, left,  674-xOffset,  56+yOffset ; click again in case of tutorial popup
     Sleep, 5000
     Loop, 30 {
-        MouseClick, left,  731,  73 ; remove cards from deck
+        MouseClick, left,  731-xOffset,  73+yOffset ; remove cards from deck
         Sleep, 500
     }
-    MouseClick, left,  72,  19 ; click basic cards tab
+    MouseClick, left,  72+2*xOffset,  19+yOffset ; click basic cards tab
     Sleep, 5000
     MouseClick, left,  365,  371 ; acidic slime
     Sleep, 1000
@@ -452,7 +476,7 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 1000
     MouseClick, left,  497,  383
     Sleep, 1000
-    MouseClick, left,  573,  278 ; next page
+    MouseClick, left,  573-xOffset,  278 ; next page
     Sleep, 3000
     MouseClick, left,  87,  157 ; bluegill
     Sleep, 1000
@@ -462,7 +486,7 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 1000
     MouseClick, left,  211,  404
     Sleep, 1000
-    MouseClick, left,  578,  284 ; next page
+    MouseClick, left,  578-xOffset,  284 ; next page
     Sleep, 3000
     MouseClick, left,  98,  189 ; ironfur
     Sleep, 1000
@@ -480,7 +504,7 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 1000
     MouseClick, left,  524,  377
     Sleep, 1000
-    MouseClick, left,  578,  279 ; next page
+    MouseClick, left,  578-xOffset,  279 ; next page
     Sleep, 3000
     MouseClick, left,  93,  180 ; dragonling mechanic
     Sleep, 1000
@@ -498,7 +522,7 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 1000
     MouseClick, left,  509,  379
     Sleep, 1000
-    MouseClick, left,  577,  280 ; next page
+    MouseClick, left,  577-xOffset,  280 ; next page
     Sleep, 3000
     MouseClick, left,  224,  377 ; boulderfist
     Sleep, 1000
@@ -512,7 +536,99 @@ MakePracticeDeck() { ; starts from home screen
     Sleep, 1000
     MouseClick, left,  474,  397
     Sleep, 1000
-    MouseClick, left,  747,  557 ; finish
+    MouseClick, left,  747-xOffset,  557-yOffset ; finish
+    Sleep, 5000
+    ;MouseClick, left,  747,  557 ; go back to home screen
+    ;Sleep, 10000
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "practice")
+}
+
+MakeHearthrangerPracticeDeck() { ; starts from home screen
+    global xOffset
+    global yOffset
+    MouseClick, left,  428,  511 ; click "My Collection" button
+    Sleep, 30000
+    MouseClick, left,  674-xOffset,  56+yOffset ; click mage deck
+    Sleep, 3000
+    MouseClick, left,  674-xOffset,  56+yOffset ; click again in case of tutorial popup
+    Sleep, 5000
+    Loop, 30 {
+        MouseClick, left,  731-xOffset,  73+yOffset ; remove cards from deck
+        Sleep, 500
+    }    
+    MouseClick, left,  368,  196
+    Sleep, 1000
+    MouseClick, left,  368,  196
+    Sleep, 1000
+    MouseClick, left,  473,  198
+    Sleep, 1000
+    MouseClick, left,  473,  198
+    Sleep, 1000
+    MouseClick, left,  116,  390
+    Sleep, 1000
+    MouseClick, left,  119,  389
+    Sleep, 1000
+    MouseClick, left,  570,  297
+    Sleep, 3000
+    MouseClick, left,  368,  386
+    Sleep, 1000
+    MouseClick, left,  368,  386
+    Sleep, 1000
+    MouseClick, left,  470,  387
+    Sleep, 1000
+    MouseClick, left,  481,  384
+    Sleep, 1000
+    MouseClick, left,  574,  295
+    Sleep, 3000
+    MouseClick, left,  236,  376
+    Sleep, 1000
+    MouseClick, left,  236,  376
+    Sleep, 1000
+    MouseClick, left,  567,  291
+    Sleep, 3000
+    MouseClick, left,  126,  186
+    Sleep, 1000
+    MouseClick, left,  124,  186
+    Sleep, 1000
+    MouseClick, left,  118,  386
+    Sleep, 1000
+    MouseClick, left,  121,  388
+    Sleep, 1000
+    MouseClick, left,  483,  388
+    Sleep, 1000
+    MouseClick, left,  484,  388
+    Sleep, 1000
+    MouseClick, left,  572,  295
+    Sleep, 3000
+    MouseClick, left,  239,  203
+    Sleep, 1000
+    MouseClick, left,  245,  203
+    Sleep, 1000
+    MouseClick, left,  121,  384
+    Sleep, 1000
+    MouseClick, left,  121,  384
+    Sleep, 1000
+    MouseClick, left,  481,  385
+    Sleep, 1000
+    MouseClick, left,  487,  389
+    Sleep, 1000
+    MouseClick, left,  570,  297
+    Sleep, 3000
+    MouseClick, left,  245,  385
+    Sleep, 1000
+    MouseClick, left,  245,  385
+    Sleep, 1000
+    MouseClick, left,  365,  390
+    Sleep, 1000
+    MouseClick, left,  365,  390
+    Sleep, 1000
+    MouseClick, left,  573,  297
+    Sleep, 3000
+    MouseClick, left,  245,  206
+    Sleep, 1000
+    MouseClick, left,  245,  206
+    Sleep, 1000
+    MouseClick, left,  747-xOffset,  557-yOffset ; finish
     Sleep, 5000
     ;MouseClick, left,  747,  557 ; go back to home screen
     ;Sleep, 10000
@@ -520,23 +636,118 @@ MakePracticeDeck() { ; starts from home screen
 }
 
 SwitchHearthrangerAcct() {
-    SetTitleMatchMode, 2
-    ;WinWait, ahk_class HwndWrapper, 
-    ;IfWinNotActive, ahk_class HwndWrapper, , WinActivate, ahk_class HwndWrapper, 
-    ;WinWaitActive, ahk_class HwndWrapper, 
-    WinWait, ahk_class HearthRanger.exe, 
-    IfWinNotActive, ahk_class HearthRanger.exe, , WinActivate, ahk_class HearthRanger.exe, 
-    WinWaitActive, ahk_class HearthRanger.exe, 
+    global hr_pid
+    WinWait, ahk_pid %hr_pid%, 
+    IfWinNotActive, ahk_pid %hr_pid%, , WinActivate, ahk_pid %hr_pid%, 
+    WinWaitActive, ahk_pid %hr_pid%, 
+    FileReadLine, hrName, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\hearthrangerAccts.txt, 1
+    FileAppend, %hrName%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\hearthrangerAccts.txt
+    TF_RemoveLines("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\hearthrangerAccts.txt", 1, 1)
     MouseClick, left,  57,  150 ; edit tasks
     WinWait, Task Editor, 
     IfWinNotActive, Task Editor, , WinActivate, Task Editor, 
     WinWaitActive, Task Editor, 
+    Sleep, 5000
+    MouseClick, left,  195,  69 ; bot account tab
     Sleep, 2000
-    MouseClick, left,  195,  69
+    MouseClick, left,  324,  128 ; select account name text box
     Sleep, 2000
-    MouseClick, left,  324,  128
+    Send, {CTRLDOWN}a{CTRLUP}%hrName%{TAB}{CTRLDOWN}a{CTRLUP}password1
     Sleep, 2000
-    Send, {CTRLDOWN}a{CTRLUP}mrpack{TAB}{CTRLDOWN}a{CTRLUP}password1
     MouseClick, left,  652,  554 ; save
     Sleep, 2000
+}
+
+LaunchHearthRanger() {
+    global hr_pid
+    Run, C:\Users\gxing\Downloads\HearthRanger\HearthRanger\HearthRanger.exe, , , hr_pid
+    Sleep, 30000
+}
+
+CloseHearthRanger() {
+    global hr_pid
+    WinClose, ahk_pid %hr_pid%
+    WinWaitClose
+    Sleep, 5000
+}
+
+DoQuestsHearthranger() {
+    global hr_pid
+    WinWait, ahk_pid %hr_pid%, 
+    IfWinNotActive, ahk_pid %hr_pid%, , WinActivate, ahk_pid %hr_pid%, 
+    WinWaitActive, ahk_pid %hr_pid%, 
+    Sleep, 1000
+    MouseClick, left,  57,  150 ; edit tasks
+    WinWait, Task Editor, 
+    IfWinNotActive, Task Editor, , WinActivate, Task Editor, 
+    WinWaitActive, Task Editor, 
+    Sleep, 5000
+    MouseClick, left,  427,  126 ; change to auto-quest mode
+    Sleep, 1000
+    MouseClick, left,  652,  554 ; save
+    Sleep, 2000
+    MouseClick, left, 211, 150 ; start
+    Sleep, 1800000 ; wait for a half hour
+    ;Sleep, 60000
+    MouseClick, left, 285, 150 ; stop
+    Sleep, 1000
+    last := TF_Tail("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt", -1)
+    StringSplit, lastArray, last, %A_Space%
+    lastArray2 +=1
+    TF_RemoveLines("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt", -1, -1)
+    if lastArray2 >= 10 ; smurf can potentially reroll into the 80g friend quest after doing 10 basic quests
+    {
+        FileAppend, %lastArray1%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+    } else 
+    {
+        FileAppend, `n%lastArray1% %lastArray2%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
+    }
+}
+
+DoPracticeGamesHearthranger() {
+    global hr_pid
+    WinWait, ahk_pid %hr_pid%, 
+    IfWinNotActive, ahk_pid %hr_pid%, , WinActivate, ahk_pid %hr_pid%, 
+    WinWaitActive, ahk_pid %hr_pid%, 
+    MouseClick, left,  57,  150 ; edit tasks
+    WinWait, Task Editor, 
+    IfWinNotActive, Task Editor, , WinActivate, Task Editor, 
+    WinWaitActive, Task Editor, 
+    Sleep, 5000
+    MouseClick, left,  333,  126 ; change to queue mode
+    Sleep, 3000
+    MouseClick, left,  682,  209 ; reset #1 (druid)
+    Sleep, 1000
+    MouseClick, left,  691,  285 ; reset #2 (hunter)
+    Sleep, 1000
+    MouseClick, left,  682,  358 ; reset #3 (paladin)
+    Sleep, 1000
+    Send, {WheelDown} ; 3 down keys == one scroll wheel down
+    Sleep, 1000
+    MouseClick, left,  693,  382 ; reset #4 (priest)
+    Sleep, 1000
+    Send, {WheelDown}
+    Sleep, 1000
+    MouseClick, left,  683,  410 ; reset #5 (shaman)
+    Sleep, 1000
+    Send, {WheelDown}
+    Sleep, 1000
+    Send, {WheelDown}
+    Sleep, 1000
+    MouseClick, left,  682,  391 ; reset #6 (warlock)
+    Sleep, 1000
+    Send, {WheelDown}
+    Sleep, 1000
+    Send, {WheelDown}
+    Sleep, 1000
+    MouseClick, left,  683,  376 ; reset #7 (warrior)
+    Sleep, 1000
+    Send, {WheelDown}
+    Sleep, 1000
+    MouseClick, left,  698,  415 ; reset #8 (rogue)
+    Sleep, 1000
+    MouseClick, left,  652,  554 ; save
+    Sleep, 2000
+    MouseClick, left,  208,  150 ; play
+    Sleep, 5500000 ; let bot run
 }
