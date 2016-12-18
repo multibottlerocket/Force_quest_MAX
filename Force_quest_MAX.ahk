@@ -2,10 +2,10 @@
 
 xOffset := 15
 yOffset := 28
-questingSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
-rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
+questingSmurfs = C:\Users\multibottlerocket\Force_quest_MAX\questingSmurfs.txt
+rerollSmurfs = C:\Users\multibottlerocket\Force_quest_MAX\rerollSmurfs.txt
 ;rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\testSmurfs.txt
-friendSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\friendSmurfs.txt
+friendSmurfs = C:\Users\multibottlerocket\Force_quest_MAX\friendSmurfs.txt
 friend = bottlerocket#1956
 
 #a::Reload
@@ -49,7 +49,10 @@ Loop, %total_lines% {
 return
 
 #v::
-DoQuestHearthRanger()
+    FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+    FileAppend, %smurfEmail% 0`n, %questingSmurfs%
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
+    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
 return
 
 LaunchBNet() {
@@ -209,19 +212,20 @@ CloseHS() {
 }
 
 BringUpSmurf() {
-    ;LaunchHS()
-    ;DoTutorial()
-    ;CloseHS()
+    global questingSmurfs
+    LaunchHS()
+    DoTutorial()
+    CloseHS()
     LaunchHS()
     ;MakePracticeDeck()
-    ;MakeHearthrangerPracticeDeck()
+    MakeHearthrangerPracticeDeck()
     DoPracticeGamesHearthranger()
     CloseHS()
     LaunchHS()
     DoPlayMode()
     ; smurf is now ready to do 10 daily quests - add to questing smurfs
     FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-    FileAppend, %smurfEmail% 0`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
+    FileAppend, %smurfEmail% 0`n, %questingSmurfs%
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
     CloseHS()
@@ -765,6 +769,8 @@ CloseHearthRanger() {
 
 DoQuestsHearthranger() {
     global hr_pid
+    global questingSmurfs
+    global rerollSmurfs
     WinWait, ahk_pid %hr_pid%, 
     IfWinNotActive, ahk_pid %hr_pid%, , WinActivate, ahk_pid %hr_pid%, 
     WinWaitActive, ahk_pid %hr_pid%, 
@@ -798,10 +804,10 @@ DoQuestsHearthranger() {
     CloseHS()
     LaunchHS()
     CheckQuests()
-    last := TF_Tail("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt", -1)
+    last := TF_Tail("!" . questingSmurfs, -1)
     StringSplit, lastArray, last, %A_Space%
     lastArray2 +=1
-    TF_RemoveLines("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt", -1, -1)
+    TF_RemoveLines("!" . questingSmurfs, -1, -1)
     ;if lastArray2 >= 10 ; smurf can potentially reroll into the 80g friend quest after doing 10 basic quests
     ;{
     ;    FileAppend, %lastArray1%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
@@ -812,11 +818,11 @@ DoQuestsHearthranger() {
     ;}
     if HasArenaQuest() ; arena quest implies we can roll 80g friend quest now
     {
-        FileAppend, %lastArray1%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
-        FileAppend, `n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
+        FileAppend, %lastArray1%`n, %rerollSmurfs%
+        FileAppend, `n, %questingSmurfs%
     } else 
     {
-        FileAppend, `n%lastArray1% %lastArray2%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
+        FileAppend, `n%lastArray1% %lastArray2%`n, %questingSmurfs%
     }
 }
 
