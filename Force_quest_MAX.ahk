@@ -8,9 +8,20 @@ rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.
 friendSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\friendSmurfs.txt
 friend = bottlerocket#1956
 
-#r::Reload
+#a::Reload
 
-#w::
+#z::
+;     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
+;     WinWaitActive, Hearthstone, 
+; DoTutorial()
+
+;LaunchHearthRanger()
+;LaunchHS()
+
+; MakeHearthrangerPracticeDeck()
+; LaunchHearthRanger()
+; DoPracticeGamesHearthranger()
+
 Loop, {
     if NeedMoreQuesters()
     {
@@ -18,6 +29,7 @@ Loop, {
     }
     DoQuestHearthRanger()
 }
+
 ;HasFriendQuest()
 ;RemoveFriend()
 ;AddFriend()
@@ -34,6 +46,10 @@ Loop, %total_lines% {
     DoReroll()
 }
 
+return
+
+#v::
+DoQuestHearthRanger()
 return
 
 LaunchBNet() {
@@ -158,7 +174,8 @@ ClickHSPlay() {
     MouseClick, left,  45,  419 ; select hearthstone on left bar, 4th entry
     Sleep, 2000
     ; MouseClick, left,  266,  472 ; click high play button
-    MouseClick, left,  266,  518 ; click low play button
+    ;MouseClick, left,  266,  518 ; click low play button
+    MouseClick, left,  266,  670 ; click low play button on gcloud
     WinWait, Hearthstone, , 15
     if ErrorLevel {
         ClickHSPlay() ; keep trying until we get it
@@ -170,7 +187,7 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
     Sleep, 30000
-    WinMaximize
+    ;WinMaximize
     MouseClick, left,  405,  355 ; dismiss quests/DC notification
     Sleep, 5000
     MouseClick, left,  405,  355 ; dismiss quests
@@ -192,12 +209,12 @@ CloseHS() {
 }
 
 BringUpSmurf() {
-    LaunchHS()
-    DoTutorial()
-    CloseHS()
+    ;LaunchHS()
+    ;DoTutorial()
+    ;CloseHS()
     LaunchHS()
     ;MakePracticeDeck()
-    MakeHearthrangerPracticeDeck()
+    ;MakeHearthrangerPracticeDeck()
     DoPracticeGamesHearthranger()
     CloseHS()
     LaunchHS()
@@ -215,8 +232,8 @@ DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop, 78 { 
-    ;Loop, 15 { 
+    ;Loop, 78 { 
+    Loop, 15 { 
         DumbSpam()
         IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
         {
@@ -317,10 +334,10 @@ EndTurn() {
 DumbSpam() {
     HandToFace()
     DumpHand()
-    ClickChoose()
+    ;ClickChoose()
     Sleep, 1000
-    SelectJaina()
-    ClickChoose()
+    ;SelectJaina()
+    ;ClickChoose()
     SpamHeroPower()
     GoFace()
     Trade()
@@ -759,7 +776,8 @@ DoQuestsHearthranger() {
     Sleep, 5000
     MouseClick, left,  427,  126 ; change to auto-quest mode
     Sleep, 1000
-    MouseClick, left,  652,  554 ; save
+    ;MouseClick, left,  652,  554 ; save
+    MouseClick, left,  682,  554 ; save
     Sleep, 2000
     MouseClick, left, 211, 150 ; start
     Sleep, 10000
@@ -844,7 +862,8 @@ DoPracticeGamesHearthranger() {
     Sleep, 1000
     MouseClick, left,  698,  415 ; reset #8 (rogue)
     Sleep, 1000
-    MouseClick, left,  652,  554 ; save
+    ;MouseClick, left,  652,  554 ; save
+    MouseClick, left,  682,  554 ; save
     Sleep, 2000
     MouseClick, left,  208,  150 ; play
     Sleep, 4000000 ; let bot run
