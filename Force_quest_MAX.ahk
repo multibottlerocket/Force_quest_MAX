@@ -6,21 +6,15 @@ questingSmurfs = C:\Users\multibottlerocket\Force_quest_MAX\questingSmurfs.txt
 rerollSmurfs = C:\Users\multibottlerocket\Force_quest_MAX\rerollSmurfs.txt
 ;rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\testSmurfs.txt
 friendSmurfs = C:\Users\multibottlerocket\Force_quest_MAX\friendSmurfs.txt
+hrAccts = C:\Users\multibottlerocket\Force_quest_MAX\hearthrangerAccts.txt
 friend = bottlerocket#1956
 
 #a::Reload
 
 #z::
-;     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
-;     WinWaitActive, Hearthstone, 
-; DoTutorial()
-
-;LaunchHearthRanger()
-;LaunchHS()
-
-; MakeHearthrangerPracticeDeck()
-; LaunchHearthRanger()
-; DoPracticeGamesHearthranger()
+Loop, {
+    MakeSmurfHearthRanger()
+}
 
 Loop, {
     if NeedMoreQuesters()
@@ -29,12 +23,6 @@ Loop, {
     }
     DoQuestHearthRanger()
 }
-
-;HasFriendQuest()
-;RemoveFriend()
-;AddFriend()
-;FriendDuelSpam()
-;AddBackToRerolls()
 return
 
 #x::
@@ -49,10 +37,8 @@ Loop, %total_lines% {
 return
 
 #v::
-    FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-    FileAppend, %smurfEmail% 0`n, %questingSmurfs%
-    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
-    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
+;MakeSmurfHearthRanger()
+DoPlayMode()
 return
 
 LaunchBNet() {
@@ -219,6 +205,7 @@ BringUpSmurf() {
     LaunchHS()
     ;MakePracticeDeck()
     MakeHearthrangerPracticeDeck()
+    SwitchHearthrangerAcct()
     DoPracticeGamesHearthranger()
     CloseHS()
     LaunchHS()
@@ -236,8 +223,9 @@ DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
+    Loop, 91 { 
     ;Loop, 78 { 
-    Loop, 15 { 
+    ;Loop, 15 { 
         DumbSpam()
         IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
         {
@@ -468,7 +456,8 @@ Concede() {
     WinWaitActive, Hearthstone, 
     MouseClick, left,  784-xOffset,  585-yOffset ; click menu gear
     Sleep, 2000
-    MouseClick, left,  429,  215 ; click "concede" Button
+    ;MouseClick, left,  429,  215 ; click "concede" Button
+    MouseClick, left,  429,  220 ; click "concede" Button
     Sleep, 7000 ; let hero blow up
 }
 
@@ -492,16 +481,16 @@ CheckQuests() {
 RollForFriendQuest() {
     CheckQuests()
     Sleep, 3000
-    if HasFriendQuest() {
-        AddToFriendSmurfs()
-    }
-    else
-    {
-        RerollAllQuests()
-        if HasFriendQuest() {
-            AddToFriendSmurfs()
-        }
-    }
+    ; if HasFriendQuest() {
+    ;     AddToFriendSmurfs()
+    ; }
+    ; else
+    ; {
+    ;     RerollAllQuests()
+    ;     if HasFriendQuest() {
+    ;         AddToFriendSmurfs()
+    ;     }
+    ; }
 }
 
 AddToFriendSmurfs() {
@@ -733,12 +722,13 @@ MakeHearthrangerPracticeDeck() { ; starts from home screen
 
 SwitchHearthrangerAcct() {
     global hr_pid
+    global hrAccts
     WinWait, ahk_pid %hr_pid%, 
     IfWinNotActive, ahk_pid %hr_pid%, , WinActivate, ahk_pid %hr_pid%, 
     WinWaitActive, ahk_pid %hr_pid%, 
-    FileReadLine, hrName, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\hearthrangerAccts.txt, 1
-    FileAppend, %hrName%`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\hearthrangerAccts.txt
-    TF_RemoveLines("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\hearthrangerAccts.txt", 1, 1)
+    FileReadLine, hrName, %hrAccts%, 1
+    FileAppend, %hrName%`n, %hrAccts%
+    TF_RemoveLines("!" . hrAccts, 1, 1)
     MouseClick, left,  57,  150 ; edit tasks
     WinWait, Task Editor, 
     IfWinNotActive, Task Editor, , WinActivate, Task Editor, 
@@ -750,7 +740,8 @@ SwitchHearthrangerAcct() {
     Sleep, 2000
     Send, {CTRLDOWN}a{CTRLUP}%hrName%{TAB}{CTRLDOWN}a{CTRLUP}password1
     Sleep, 2000
-    MouseClick, left,  652,  554 ; save
+    ;MouseClick, left,  652,  554 ; save
+    MouseClick, left,  682,  554 ; save
     Sleep, 2000
 }
 
