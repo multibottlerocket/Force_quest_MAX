@@ -1,4 +1,5 @@
 #Include tf.ahk
+#Include screencap.ahk
 
 xOffset := 15
 yOffset := 28
@@ -6,43 +7,136 @@ questingSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmu
 rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.txt
 ;rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\testSmurfs.txt
 friendSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\friendSmurfs.txt
-friend = bottlerocket#1956
+premades = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\premades.txt
+transfers = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\transfers.txt
+;friend = bottlerocket#1956
+friend = kap#1187
+;friend = hroll#1490
+;friend = yoyotimes5#1868
 
-#r::Reload
+#a::Reload
 
-#w::
+#z::
 Loop, {
-    if NeedMoreQuesters()
+    if IsNextDay()
     {
-        MakeSmurfHearthRanger()
+        DoAllRerolls(rerollSmurfs)
+        UpdateRerollDate()
     }
-    DoQuestHearthRanger()
+    else
+    {
+        if NeedMoreQuesters()
+        {
+            if PremadeSmurfsReady(premades)
+            {
+                MoveFromAToB(premades, questingSmurfs)
+            }
+            else
+            {
+                MakeSmurfHearthRanger()
+            }
+        }
+        DoQuestHearthRanger()
+    }
 }
+return
+
+#x::
+;ProcessTransfers(transfers, premades)
+;MoveFromAToB(premades, questingSmurfs)
+if HasArenaQuest() 
+{
+    MsgBox, has arena
+}
+else
+{
+    MsgBox, no arena
+}
+return
+
+#v::
+;CaptureScreen()
 ;HasFriendQuest()
 ;RemoveFriend()
 ;AddFriend()
 ;FriendDuelSpam()
-;AddBackToRerolls()
-return
-
-#x::
-Loop, Read, %rerollSmurfs%
+;DoReroll()
+Loop, 2
 {
-    total_lines = %A_Index%
+CashInFriendQuest()
 }
-Loop, %total_lines% {
-    DoReroll()
-}
-
 return
 
-LaunchBNet() {
+ProcessTransfers(transfers, premades) {
+    Loop, Read, %transfers%
+    {
+        total_lines = %A_Index%
+    }
+    Loop, %total_lines% {
+        LaunchBNet(10000)
+        last := TF_Tail("!" . transfers, -1)
+        StringSplit, split1, last, %A_Space%
+        LogIn(split11)
+        MsgBox, input code, then close this
+        MoveFromAToB(transfers, premades)
+        LogOut()
+    }
+}
+
+PremadeSmurfsReady(premades) {
+    Loop, Read, %premades%
+    {
+        total_lines = %A_Index%
+    }
+    if total_lines > 1
+    {
+        return true
+    }
+    else
+    {
+        return false
+    }
+}
+
+DoAllRerolls(rerollSmurfs) {
+    Loop, Read, %rerollSmurfs%
+    {
+        total_lines = %A_Index%
+    }
+    Loop, %total_lines% {
+        DoReroll()
+    }
+}
+
+IsNextDay() {
+    diff = %A_Now%
+    FileReadLine, lastReroll, C:\lastReroll.txt, 1
+    diff -= %lastReroll%, days
+    if diff > 0
+    {
+        return true
+    }
+    else
+    {
+        return false
+    }
+}
+
+UpdateRerollDate() {
+    now = %A_Now%
+    day := SubStr(now, 1, 8)
+    TF_ReplaceLine("!" . "C:\lastReroll.txt", "1", "1", day)
+}
+
+; waitTime of 15000 for safe and 10000 for tight, fast, supervised loops
+LaunchBNet(waitTime) {
     ;RunWait C:\Program Files\Battle.net\Battle.net Launcher.exe ; tiny xp
     RunWait C:\Program Files (x86)\Battle.net\Battle.net Launcher.exe ; win 7 
     WinWait, Battle.net Login, 
     IfWinNotActive, Battle.net Login, , WinActivate, Battle.net Login, 
     WinWaitActive, Battle.net Login, 
-    Sleep, 15000
+    ;Sleep, 15000
+    Sleep, %waitTime%
 }
 
 ResumeSmurf() {
@@ -96,6 +190,7 @@ RerollLogIn() {
     FileAppend, %smurfEmail%`n, %rerollSmurfs%
     TF_RemoveLines("!" . rerollSmurfs, 1, 1)
     LogIn(smurfEmail)
+    return smurfEmail
 }
 
 LogIn(smurfEmail) {
@@ -136,15 +231,11 @@ LogOut() {
     ;WinClose, Battle.net
     WinKill, Battle.net
     Sleep, 1000
+    IfWinExist, Battle.net
     {
         MouseClick, left,  29,  157
         Sleep, 100
         MouseClick, left,  305,  222
-        Sleep, 100
-    }
-    Sleep, 2000
-    IfWinExist, Battle.net
-    {
         LogOut()
     }
 }
@@ -168,7 +259,10 @@ ClickHSPlay() {
 LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
     ClickHSPlay()
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
-    WinWaitActive, Hearthstone, 
+    WinWaitActive, Hearthstone, , 15
+    if ErrorLevel {
+        ClickHSPlay() ; keep trying until we get it
+    }
     Sleep, 30000
     WinMaximize
     MouseClick, left,  405,  355 ; dismiss quests/DC notification
@@ -246,7 +340,7 @@ DoTutorial() {
             Sleep, 2000
             MouseClick, left, 522, 409 ; close window
             Sleep, 5000
-            LaunchBNet()
+            LaunchBNet(15000)
             ResumeSmurf()
             LaunchHS()
             Loop, 13 {
@@ -300,7 +394,7 @@ DoPracticeGames() {
             Sleep, 2000
             MouseClick, left, 522, 409 ; close window
             Sleep, 5000
-            LaunchBNet()
+            LaunchBNet(15000)
             ResumeSmurf()
             LaunchHS()
             Loop, 13 {
@@ -317,10 +411,10 @@ EndTurn() {
 DumbSpam() {
     HandToFace()
     DumpHand()
-    ClickChoose()
-    Sleep, 1000
-    SelectJaina()
-    ClickChoose()
+    ;ClickChoose()
+    ;Sleep, 1000
+    ;SelectJaina()
+    ;ClickChoose()
     SpamHeroPower()
     GoFace()
     Trade()
@@ -466,11 +560,12 @@ DismissQuests() {
 
 CheckQuests() {
     MouseClick, left,  180,  500 ; click quest button
+    Sleep, 3000
 }
 
-RollForFriendQuest() {
+RollForFriendQuest(currentSmurf) {
     CheckQuests()
-    Sleep, 3000
+    CaptureScreen(currentSmurf)
     if HasFriendQuest() {
         AddToFriendSmurfs()
     }
@@ -478,6 +573,7 @@ RollForFriendQuest() {
     {
         RerollAllQuests()
         if HasFriendQuest() {
+            CaptureScreen(currentSmurf)
             AddToFriendSmurfs()
         }
     }
@@ -763,7 +859,7 @@ DoQuestsHearthranger() {
     Sleep, 2000
     MouseClick, left, 211, 150 ; start
     Sleep, 10000
-    Loop {
+    Loop, 1440 {
         IfWinNotActive, ahk_pid %hr_pid%, , WinActivate, ahk_pid %hr_pid%, 
         WinWaitActive, ahk_pid %hr_pid%, 
         PixelSearch, , , 33, 124, 262, 139, 0x00FF00, , Fast
@@ -853,7 +949,7 @@ DoPracticeGamesHearthranger() {
 
 MakeSmurfHearthRanger() {
     LaunchHearthRanger()
-    LaunchBNet()
+    LaunchBNet(15000)
     ResumeSmurf()
     Sleep, 20000
     MouseClick, left,  70,  492 ; auto update games for new acct
@@ -864,7 +960,7 @@ MakeSmurfHearthRanger() {
 
 DoQuestHearthRanger() {
     LaunchHearthRanger()
-    LaunchBNet()
+    LaunchBNet(15000)
     QuestingLogIn()
     LaunchHS()
     DoQuestsHearthranger()
@@ -874,32 +970,53 @@ DoQuestHearthRanger() {
 }
 
 DoReroll() {
-    LaunchBNet()
-    RerollLogIn()
+    LaunchBNet(10000)
+    currentSmurf := RerollLogIn()
     LaunchHS()
-    RollForFriendQuest()
+    RollForFriendQuest(currentSmurf)
     CloseHS()
     LogOut()
 }
 
 HasArenaQuest() {
-    PixelSearch, , , 231, 390, 583, 528, 0x213863, , Fast
-    if ErrorLevel ; arena quest not found
+    ;PixelSearch, , , 231, 390, 583, 528, 0x213863, , Fast
+    ;;PixelSearch, , , 231, 450, 583, 477, 0x98BFD5, , Fast
+    ;if ErrorLevel ; arena quest not found
+    ;{
+    ;    return false
+    ;    ;MsgBox, no arena
+    ;}
+    ;else ; arena quest found - we're done doing quests
+    ;{
+    ;    return true
+    ;    ;MsgBox, arena found
+    ;}
+    ImageSearch, , , 231, 390, 583, 528, arenaLeft.png
+    if ErrorLevel = 1
     {
-        return false
-        ;MsgBox, no arena
+        ImageSearch, , , 231, 390, 583, 528, arenaMid.png
+        if ErrorLevel = 1
+        {
+            ;MsgBox, no friend quest
+            return false
+        }
+        else
+        {
+            ;MsgBox, mid friend found
+            return true
+        }
     }
-    else ; arena quest found - we're done doing quests
+    else
     {
+        ;MsgBox, left friend quest found
         return true
-        ;MsgBox, arena found
     }
 }
 
 FriendLogIn() {
     global friendSmurfs
     FileReadLine, smurfEmail, %friendSmurfs%, 1
-    FileAppend, %friendSmurfs%`n, %friendSmurfs%
+    FileAppend, %smurfEmail%`n, %friendSmurfs%
     TF_RemoveLines("!" . friendSmurfs, 1, 1)
     LogIn(smurfEmail)
 }
@@ -937,31 +1054,47 @@ AddBackToRerolls() {
     FileAppend, %last%, %rerollSmurfs%
 }
 
+MoveFromAToB(listA, listB) {
+    last := TF_Tail("!" . listA, -1)
+    TF_RemoveLines("!" . listA, -1, -1)
+    FileAppend, `n, %listA%
+    FileAppend, %last%, %listB%
+}
+
 FriendDuelSpam() {
     while true 
     {
-        ; if challenge is cancelled
-            ; get rid of cancellation notification x2
-            ; return
-        ; else
+        PixelSearch, , , 382, 347, 428, 347, 0x73DBE8, , Fast
+        if ErrorLevel ; no challenge canclled box, so keep spamming
+        {
             MouseClick, left,  30,  558 ; open friends list
             Sleep, 500
             MouseClick, left,  179,  260 ; click challenge button in friends list
             Sleep, 500
             MouseClick, left,  296,  264 ; click standard challenge
-            Sleep, 500
+            Sleep, 100
             MouseClick, left, 410, 446 ; click confirm for mulligan
-            Sleep, 500
+            Sleep, 100
             MouseClick, left,  638,  491 ; click play
-            Sleep, 500
+            Sleep, 100
             EndTurn()
-            Sleep, 500
+            Sleep, 100
+        }
+        else ; challenge cancelled - we're done
+        {
+            Loop, 2 ; dismiss cancellation notifications - need to mod this to account for delayed second cancellation
+            {
+                MouseClick, left,  405,  335
+                Sleep, 2000
+            }
+            return
+        }
     }
 }
 
 CashInFriendQuest() {
     global friendSmurfs
-    LaunchBNet()
+    LaunchBNet(10000)
     FriendLogIn()
     LaunchHS()
     AddFriend()

@@ -1,19 +1,23 @@
-try moving VM to other HDD for better loading times in parallel - cpu doesn't seem to be the issue
-try on laptop?
-try loading hearthstone on single vm first before booting any others
-can i get 3+ VMs running with one of the above?
-try SSD? (enough space?)
+test silverfish ai in tutorial
+	can read state but can't play cards properly
+clicks after play mode need to be lowered
+	second didn't seem to register, either
+	lowered by 10 pixels, see if that helps
+seem to get stuck on login having clicked on fb button for some reason
+hearthranger bot stopped working after around 24 hours
+	VM reset fixed this
+launchhs failed
+	twice now, over about 3 days
+hearthranger gets stuck if you unlock your last class bc the deck it made disppears
 
-having 2 VMs running and trying to boot up a third went very, very poorly
-	even after the 3rd was booted up, the first two were unrecoverably lagged, even with some reloading of programs within the VM
-	CPU was still only 50% on all cores, even with an HD twitch stream running
-
-after running blind loop for long enough to probaly get through the tutorial, make modifications to basic mage deck for better win rate
-	add yeti and sen'jin, and any other efficient bodies/big taunts
-	remove mage spells except for intellect
-	maybe also switch to a loop that trades before going face
-		can that loop beat the tutorial?
-	what is the actual winrate of the current loop?
-
-figure out what the minimum requirements are for an 80g friend quest game to count
-	can you just pass turn back several times and concede?
+speeding up basic login:
+trim waits from:
+	launching bnet - 8 sec
+	launching hs - 8 sec
+	// after closing bnet, smarter clicking for extra window
+	strip concede out of closehs()
+	does closing bnet have to wait on closing hs?
+	
+Cloud botting:
+	need to run in a VM to avoid needing RDP connection
+	can switch to linux image?
