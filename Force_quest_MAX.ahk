@@ -13,7 +13,7 @@ transfers = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\transfers.txt
 friend = kap#1187
 ;friend = hroll#1490
 ;friend = yoyotimes5#1868
-
+;
 #a::Reload
 
 #z::
