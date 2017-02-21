@@ -678,6 +678,7 @@ HasFriendQuest() {
             }
             else
             {
+                ;MsgBox, right friend found
                 return true
             }
         }
