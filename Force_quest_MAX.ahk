@@ -9,63 +9,71 @@ rerollSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\rerollSmurfs.
 friendSmurfs = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\friendSmurfs.txt
 premades = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\premades.txt
 transfers = \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\transfers.txt
-;friend = bottlerocket#1956
-friend = kap#1187
+friend = bottlerocket#1956
+;friend = kap#1187
 ;friend = hroll#1490
 ;friend = yoyotimes5#1868
-;
+
+maximizeStuck = false
+
+;SetTimer, 
+
+;watchdog:
+
+;return
+
 #a::Reload
 
 #z::
-Loop, {
-    if IsNextDay()
-    {
-        DoAllRerolls(rerollSmurfs)
-        UpdateRerollDate()
-    }
-    else
-    {
-        if NeedMoreQuesters()
-        {
-            if PremadeSmurfsReady(premades)
-            {
-                MoveFromAToB(premades, questingSmurfs)
-            }
-            else
-            {
-                MakeSmurfHearthRanger()
-            }
-        }
-        DoQuestHearthRanger()
-    }
-}
+ForceQuestMax(rerollSmurfs, premades, questingSmurfs)
 return
 
 #x::
 ;ProcessTransfers(transfers, premades)
-;MoveFromAToB(premades, questingSmurfs)
-if HasArenaQuest() 
-{
-    MsgBox, has arena
-}
-else
-{
-    MsgBox, no arena
-}
+HasFriendQuest()
+;HardCloseHS()
 return
 
 #v::
-;CaptureScreen()
-;HasFriendQuest()
-;RemoveFriend()
-;AddFriend()
-;FriendDuelSpam()
-;DoReroll()
-Loop, 2
+Loop, Read, %friendSmurfs%
 {
-CashInFriendQuest()
+    total_lines = %A_Index%
 }
+total_lines := total_lines - 1 ; always leave a spare
+total_lines := total_lines < 6 ? total_lines : 5 ; can only redeem 5 friend quests a day
+Loop, %total_lines%
+{
+    CashInFriendQuest()
+    ;MsgBox, hi
+}
+gosub, #z
 return
+
+ForceQuestMAX(rerollSmurfs, premades, questingSmurfs) {
+    Loop, {
+        if IsNextDay()
+        {
+            DoAllRerolls(rerollSmurfs)
+            UpdateRerollDate()
+        }
+        else
+        {
+            if NeedMoreQuesters()
+            {
+                if PremadeSmurfsReady(premades)
+                {
+                    MoveFromAToB(premades, questingSmurfs)
+                }
+                else
+                {
+                    MakeSmurfHearthRanger()
+                }
+            }
+            DoQuestHearthRanger()
+        }
+    }
+    return
+}
 
 ProcessTransfers(transfers, premades) {
     Loop, Read, %transfers%
@@ -174,7 +182,7 @@ NeedMoreQuesters() {
     {
         total_lines = %A_Index%
     }
-    if total_lines < 16
+    if total_lines < 17
     {
         return true
     }
@@ -211,7 +219,9 @@ MakeNewAcct() {
     Random, smurfRand, 100000, 999999
     smurfName := "Prisoner" . smurfRand 
     SetKeyDelay, 100
-    Send, first{TAB}last{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
+    ;Send, first{TAB}last{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
+    ; for stupid facebook
+    Send, {TAB}{TAB}{TAB}first{TAB}last{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
     SetKeyDelay, 10
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", smurfName)
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "tutorial")
@@ -230,7 +240,7 @@ LogOut() {
     ;Sleep, 2000
     ;WinClose, Battle.net
     WinKill, Battle.net
-    Sleep, 1000
+    Sleep, 2000
     IfWinExist, Battle.net
     {
         MouseClick, left,  29,  157
@@ -257,6 +267,7 @@ ClickHSPlay() {
 }
 
 LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
+    global maximizeStuck
     ClickHSPlay()
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, , 15
@@ -264,11 +275,18 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
         ClickHSPlay() ; keep trying until we get it
     }
     Sleep, 30000
+    maximizeStuck := true
+    SetTimer, CloseHSIfStuck, -10000
     WinMaximize
+    maximizeStuck := false
     MouseClick, left,  405,  355 ; dismiss quests/DC notification
     Sleep, 5000
     MouseClick, left,  405,  355 ; dismiss quests
     Sleep, 5000
+    IfWinExist, Chrome
+    {
+        WinClose
+    }
     IfWinNotExist, Hearthstone 
     {
         LaunchHS()
@@ -276,7 +294,7 @@ LaunchHS() { ; trying to launch from the hs.exe with Run gives a black screen
 }
 
 CloseHS() {
-    Concede() ; otherwise it will reconnect us to our game
+    ;Concede() ; otherwise it will reconnect us to our game
     IfWinExist, Hearthstone
     {
         WinKill
@@ -285,31 +303,81 @@ CloseHS() {
     return
 }
 
+HardCloseHS() {
+        run taskmgr.exe
+        Sleep, 5000
+        Send, h
+        Sleep, 500
+        Send, !e{enter}
+        Sleep, 10000
+        Send, {Left}{enter}
+        Sleep, 5000
+        Send, {enter}
+        IfWinNotActive, Windows Task Manager, , WinActivate, Windows Task Manager, 
+        WinWaitActive, Windows Task Manager, , 15
+        WinClose
+        Sleep, 5000
+        ;LaunchHS()
+}
+
+CloseHSIfStuck:
+    if maximizeStuck
+    {
+        HardCloseHS()
+    }
+    return
+
 BringUpSmurf() {
-    LaunchHS()
-    DoTutorial()
-    CloseHS()
-    LaunchHS()
-    ;MakePracticeDeck()
-    MakeHearthrangerPracticeDeck()
-    DoPracticeGamesHearthranger()
-    CloseHS()
-    LaunchHS()
-    DoPlayMode()
-    ; smurf is now ready to do 10 daily quests - add to questing smurfs
-    FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
-    FileAppend, %smurfEmail% 0`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
-    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
-    TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
-    CloseHS()
-    LogOut()
+    FileReadLine, smurfState, C:\currentHsSmurf.txt, 2
+    if (smurfState == "tutorial")
+    {
+        LaunchHS()
+        DoTutorial()
+        Concede()
+        ;CloseHS()
+        HardCloseHS()
+        LaunchHS()
+        ;MakePracticeDeck()
+        MakeHearthrangerPracticeDeck()
+        ;CloseHS()
+        HardCloseHS()
+        BringUpSmurf()
+    }
+    else if (smurfState == "practice")
+    {
+        LaunchHS()
+        DoPracticeGamesHearthranger()
+        Concede()
+        ;CloseHS()
+        HardCloseHS()
+        BringUpSmurf()
+    }
+    else if (smurfState == "play")
+    {
+        LaunchHS()
+        DoPlayMode()
+        ; smurf is now ready to do 10 daily quests - add to questing smurfs
+        FileReadLine, smurfEmail, C:\currentHsSmurf.txt, 1
+        FileAppend, %smurfEmail% 0`n, \\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt
+        TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", "None")
+        TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "None")
+        Concede()
+        ;CloseHS()
+        HardCloseHS()
+        LogOut()
+    }
+    else
+    {
+        TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "tutorial")
+        BringUpSmurf()
+    }
 }
 
 DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop, 78 { 
+    Loop, 93 { 
     ;Loop, 15 { 
         DumbSpam()
         IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
@@ -355,7 +423,9 @@ DoPracticeGames() {
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
     Loop,  9 { ; try doing 9 games
-        CloseHS()
+        Concede()
+        ;CloseHS()
+        HardCloseHS()
         LaunchHS()
         MouseClick, left,  368,  223 ; click "solo adventures"
         Sleep, 10000
@@ -538,7 +608,7 @@ Concede() {
     global xOffset
     global yOffset
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
-    WinWaitActive, Hearthstone, 
+    WinWaitActive, Hearthstone, , 15
     MouseClick, left,  784-xOffset,  585-yOffset ; click menu gear
     Sleep, 2000
     MouseClick, left,  429,  215 ; click "concede" Button
@@ -553,9 +623,13 @@ DismissQuests() {
     MouseClick, left,  511,  40 ; dismiss new quest
     Sleep, 5000
     MouseClick, left,  511,  60 ; extra clicks to dismiss settings menus in case opponent conceded first
-    Sleep, 3000
+    Sleep, 2000
     MouseClick, left,  511,  50 ; 
-    Sleep, 3000
+    Sleep, 1000
+    MouseClick, left,  511,  60 ; 
+    Sleep, 2000
+    MouseClick, left,  511,  50 ; 
+    Sleep, 1000
 }
 
 CheckQuests() {
@@ -596,8 +670,16 @@ HasFriendQuest() {
         ImageSearch, , , 231, 390, 583, 528, friendMid.png
         if ErrorLevel = 1
         {
-            ;MsgBox, no friend quest
-            return false
+            ImageSearch, , , 231, 390, 583, 528, friendRight.png
+            if ErrorLevel = 1
+            {
+                ;MsgBox, no friend quest
+                return false
+            }
+            else
+            {
+                return true
+            }
         }
         else
         {
@@ -617,11 +699,11 @@ HasFriendQuest() {
 
 RerollAllQuests() {
     MouseClick, left, 337, 403
-    Sleep, 2000
+    Sleep, 500
     MouseClick, left, 449, 403
-    Sleep, 2000
+    Sleep, 500
     MouseClick, left, 564, 403
-    Sleep, 2000
+    Sleep, 500
 }
 
 MakePracticeDeck() { ; for blind spam ai; starts from home screen
@@ -873,7 +955,9 @@ DoQuestsHearthranger() {
     ;;Sleep, 60000
     ;MouseClick, left, 285, 150 ; stop
     ;Sleep, 1000
-    CloseHS()
+    Concede()
+   ; CloseHS()
+    HardCloseHS()
     LaunchHS()
     CheckQuests()
     last := TF_Tail("!" . "\\vmware-host\Shared Folders\GitHub\Force_quest_MAX\questingSmurfs.txt", -1)
@@ -959,22 +1043,26 @@ MakeSmurfHearthRanger() {
 }
 
 DoQuestHearthRanger() {
+    global maximizeStuck
     LaunchHearthRanger()
     LaunchBNet(15000)
     QuestingLogIn()
     LaunchHS()
     DoQuestsHearthranger()
-    CloseHS()
+    ;CloseHS()
+    HardCloseHS()
     LogOut()
     CloseHearthRanger()
 }
 
 DoReroll() {
+    global maximizeStuck
     LaunchBNet(10000)
     currentSmurf := RerollLogIn()
     LaunchHS()
     RollForFriendQuest(currentSmurf)
-    CloseHS()
+    HardCloseHS()
+    ;CloseHS()
     LogOut()
 }
 
@@ -1062,10 +1150,10 @@ MoveFromAToB(listA, listB) {
 }
 
 FriendDuelSpam() {
-    while true 
+    Loop
     {
-        PixelSearch, , , 382, 347, 428, 347, 0x73DBE8, , Fast
-        if ErrorLevel ; no challenge canclled box, so keep spamming
+        PixelSearch, , , 580, 448, 680, 495, 0x000000, , Fast ; appears after challenge accepted
+        if ErrorLevel ; challenge hasn't been accepted yet, so keep spamming
         {
             MouseClick, left,  30,  558 ; open friends list
             Sleep, 500
@@ -1080,16 +1168,45 @@ FriendDuelSpam() {
             EndTurn()
             Sleep, 100
         }
-        else ; challenge cancelled - we're done
+        else ; challenge accepted - move to in-game spam
         {
-            Loop, 2 ; dismiss cancellation notifications - need to mod this to account for delayed second cancellation
-            {
-                MouseClick, left,  405,  335
-                Sleep, 2000
-            }
-            return
+            break
         }
     }
+    Loop, 90
+    {
+        MouseClick, left, 410, 446 ; click confirm for mulligan
+        Sleep, 100
+        MouseClick, left,  638,  491 ; click play
+        Sleep, 100
+        EndTurn()
+        Sleep, 100
+    }
+    Loop
+    {
+        PixelSearch, , , 580, 448, 680, 495, 0x000000, , Fast ; appears when game is done
+        if ErrorLevel ; game isn't done yet, so keep spamming
+        {
+            MouseClick, left, 410, 446 ; click confirm for mulligan
+            Sleep, 100
+            MouseClick, left,  638,  491 ; click play
+            Sleep, 100
+            EndTurn()
+            Sleep, 100
+        }
+        else ; game is done
+        {
+            break
+        }
+    }
+    MouseClick, left, 720, 529 ; back out of challenge
+            ;Loop, 2 ; dismiss cancellation notifications - need to mod this to account for delayed second cancellation
+            ;{
+            ;    MouseClick, left,  405,  335
+            ;    Sleep, 2000
+            ;}
+            ;return
+    return
 }
 
 CashInFriendQuest() {
