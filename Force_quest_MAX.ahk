@@ -29,9 +29,8 @@ ForceQuestMax(rerollSmurfs, premades, questingSmurfs)
 return
 
 #x::
-;ProcessTransfers(transfers, premades)
-HasFriendQuest()
-;HardCloseHS()
+
+
 return
 
 #v::
@@ -42,6 +41,7 @@ Loop, Read, %friendSmurfs%
 total_lines := total_lines - 1 ; always leave a spare
 total_lines := total_lines < 6 ? total_lines : 5 ; can only redeem 5 friend quests a day
 Loop, %total_lines%
+;Loop, 2
 {
     CashInFriendQuest()
     ;MsgBox, hi
@@ -75,6 +75,25 @@ ForceQuestMAX(rerollSmurfs, premades, questingSmurfs) {
     return
 }
 
+DisableStreaming() { ; starts from bnet game selection page
+    WinWait, Battle.net, 
+    IfWinNotActive, Battle.net, , WinActivate, Battle.net, 
+    WinWaitActive, Battle.net, 
+    MouseClick, left,  64,  56 ; blizz menu icon
+    Sleep, 2000
+    MouseClick, left,  68,  137 ; settings
+    Sleep, 2000
+    WinWait, Battle.net Settings, 
+    IfWinNotActive, Battle.net Settings, , WinActivate, Battle.net Settings, 
+    WinWaitActive, Battle.net Settings, 
+    MouseClick, left,  83,  269 ; streaming
+    Sleep, 2000
+    MouseClick, left,  291,  139 ; uncheck streaming box
+    Sleep, 2000
+    Send, {ENTER} ; save settings
+    Sleep, 2000
+}
+
 ProcessTransfers(transfers, premades) {
     Loop, Read, %transfers%
     {
@@ -85,7 +104,10 @@ ProcessTransfers(transfers, premades) {
         last := TF_Tail("!" . transfers, -1)
         StringSplit, split1, last, %A_Space%
         LogIn(split11)
-        MsgBox, input code, then close this
+        ;MsgBox, input code, then close this
+        LaunchHS()
+        DoPlayMode()
+        HardCloseHS()
         MoveFromAToB(transfers, premades)
         LogOut()
     }
@@ -159,6 +181,7 @@ ResumeSmurf() {
     if (smurfEmail = "None") ; make new smurf
     {
         MakeNewAcct()
+        DisableStreaming()
         return
     }
     else ; if currentHsSmurf.txt is populated, resume where we left off
@@ -182,7 +205,7 @@ NeedMoreQuesters() {
     {
         total_lines = %A_Index%
     }
-    if total_lines < 17
+    if total_lines < 16
     {
         return true
     }
@@ -221,7 +244,9 @@ MakeNewAcct() {
     SetKeyDelay, 100
     ;Send, first{TAB}last{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
     ; for stupid facebook
-    Send, {TAB}{TAB}{TAB}first{TAB}last{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
+    ;Send, {TAB}{TAB}{TAB}first{TAB}last{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}69{TAB}{SPACE}{TAB}{SPACE}{TAB}{TAB}{ENTER}
+    ; now with birthdate and no age
+    Send, {TAB}{TAB}{TAB}first{TAB}last{TAB}{Down}{Down}{TAB}3{TAB}1969{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}samsungpackman{+}%smurfName%{SHIFTDOWN}2{SHIFTUP}gmail.com{TAB}password1{TAB}password1{TAB}{DOWN}{TAB}firstcar{TAB}{SPACE}{TAB}{ENTER}
     SetKeyDelay, 10
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "1", "1", smurfName)
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "tutorial")
@@ -310,7 +335,7 @@ HardCloseHS() {
         Sleep, 500
         Send, !e{enter}
         Sleep, 10000
-        Send, {Left}{enter}
+        Send, {Left}{Up}{enter}
         Sleep, 5000
         Send, {enter}
         IfWinNotActive, Windows Task Manager, , WinActivate, Windows Task Manager, 
@@ -377,7 +402,7 @@ DoTutorial() {
     WinWait, Hearthstone,  
     IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
     WinWaitActive, Hearthstone, 
-    Loop, 93 { 
+    Loop, 100 { 
     ;Loop, 15 { 
         DumbSpam()
         IfWinNotExist, Hearthstone ; re-launch HS if it crashes and run for longer
@@ -639,7 +664,6 @@ CheckQuests() {
 
 RollForFriendQuest(currentSmurf) {
     CheckQuests()
-    CaptureScreen(currentSmurf)
     if HasFriendQuest() {
         AddToFriendSmurfs()
     }
@@ -647,10 +671,10 @@ RollForFriendQuest(currentSmurf) {
     {
         RerollAllQuests()
         if HasFriendQuest() {
-            CaptureScreen(currentSmurf)
             AddToFriendSmurfs()
         }
     }
+    CaptureScreen(currentSmurf)
 }
 
 AddToFriendSmurfs() {
@@ -693,9 +717,6 @@ HasFriendQuest() {
         ;MsgBox, left friend quest found
         return true
     }
-    ; if it Is
-        ; log this username as having the quest
-    ; log out
 }
 
 RerollAllQuests() {
@@ -704,7 +725,7 @@ RerollAllQuests() {
     MouseClick, left, 449, 403
     Sleep, 500
     MouseClick, left, 564, 403
-    Sleep, 500
+    Sleep, 2000
 }
 
 MakePracticeDeck() { ; for blind spam ai; starts from home screen
@@ -914,7 +935,8 @@ SwitchHearthrangerAcct() {
 
 LaunchHearthRanger() {
     global hr_pid
-    Run, C:\Users\gxing\Downloads\HearthRanger\HearthRanger\HearthRanger.exe, , , hr_pid
+    ;Run, C:\Users\gxing\Downloads\HearthRanger\HearthRanger\HearthRanger.exe, , , hr_pid
+    Run, C:\HearthRanger\HearthRanger.exe, , , hr_pid
     Sleep, 10000
 }
 
@@ -1028,7 +1050,7 @@ DoPracticeGamesHearthranger() {
     MouseClick, left,  652,  554 ; save
     Sleep, 2000
     MouseClick, left,  208,  150 ; play
-    Sleep, 4000000 ; let bot run
+    Sleep, 3600000 ; let bot run
     TF_ReplaceLine("!" . "C:\currentHsSmurf.txt", "2", "2", "play")
 }
 
@@ -1060,6 +1082,7 @@ DoReroll() {
     global maximizeStuck
     LaunchBNet(10000)
     currentSmurf := RerollLogIn()
+    ;DisableStreaming()
     LaunchHS()
     RollForFriendQuest(currentSmurf)
     HardCloseHS()
@@ -1068,36 +1091,24 @@ DoReroll() {
 }
 
 HasArenaQuest() {
-    ;PixelSearch, , , 231, 390, 583, 528, 0x213863, , Fast
-    ;;PixelSearch, , , 231, 450, 583, 477, 0x98BFD5, , Fast
-    ;if ErrorLevel ; arena quest not found
-    ;{
-    ;    return false
-    ;    ;MsgBox, no arena
-    ;}
-    ;else ; arena quest found - we're done doing quests
-    ;{
-    ;    return true
-    ;    ;MsgBox, arena found
-    ;}
     ImageSearch, , , 231, 390, 583, 528, arenaLeft.png
     if ErrorLevel = 1
     {
         ImageSearch, , , 231, 390, 583, 528, arenaMid.png
         if ErrorLevel = 1
         {
-            ;MsgBox, no friend quest
+            ;MsgBox, no arena quest
             return false
         }
         else
         {
-            ;MsgBox, mid friend found
+            ;MsgBox, mid arena found
             return true
         }
     }
     else
     {
-        ;MsgBox, left friend quest found
+        ;MsgBox, left arena quest found
         return true
     }
 }
@@ -1153,7 +1164,8 @@ MoveFromAToB(listA, listB) {
 FriendDuelSpam() {
     Loop
     {
-        PixelSearch, , , 580, 448, 680, 495, 0x000000, , Fast ; appears after challenge accepted
+        ;PixelSearch, , , 580, 448, 680, 495, 0x000000, , Fast ; appears after challenge accepted
+        ImageSearch, , , 580, 448, 680, 495, chooseLine.png ; appears after challenge accepted
         if ErrorLevel ; challenge hasn't been accepted yet, so keep spamming
         {
             MouseClick, left,  30,  558 ; open friends list
@@ -1185,19 +1197,26 @@ FriendDuelSpam() {
     }
     Loop
     {
-        PixelSearch, , , 580, 448, 680, 495, 0x000000, , Fast ; appears when game is done
+        ;PixelSearch, , , 580, 448, 680, 495, 0x000000, , Fast ; appears when game is done
+        ImageSearch, , , 580, 448, 680, 495, chooseLine.png ; appears when game is done
         if ErrorLevel ; game isn't done yet, so keep spamming
         {
             MouseClick, left, 410, 446 ; click confirm for mulligan
-            Sleep, 100
-            MouseClick, left,  638,  491 ; click play
             Sleep, 100
             EndTurn()
             Sleep, 100
         }
         else ; game is done
         {
-            break
+            ImageSearch, , , 580, 448, 680, 495, chooseLine2.png ; make extra sure
+            if ErrorLevel ; oops, we got tricked by some animation
+            {
+                continue
+            }
+            else ; game is probably actually done
+            {            
+                break
+            }
         }
     }
     MouseClick, left, 720, 529 ; back out of challenge

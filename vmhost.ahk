@@ -8,18 +8,25 @@ yOffset := 28
 LaunchBNet()
 ClickHSPlay()
 Sleep, 20000
+WinActivate, Windows7x64 ; so that bnet windows doesn't cover it up
 ; accept duel + in game face spam
-IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
-WinWaitActive, Hearthstone, , 15
 Loop
 {
+	IfWinExist, Sponsored session
+	{
+		WinActivate
+		Send, {enter}
+		;WinKill
+	}
+	IfWinNotActive, Hearthstone, , WinActivate, Hearthstone, 
+	WinWaitActive, Hearthstone, , 15
 	AcceptFriend()
 	Loop, 2
 	{
 	    MouseClick, left, 410, 446 ; click confirm for mulligan
 	    Sleep, 100
 	}
-    MouseClick, left,  405,  335 ; dismiss cancellation notice
+    MouseClick, left,  405,  342 ; dismiss cancellation notices
     Sleep, 100
 	HandToFace()
 	MouseClick, left, 70, 292 ; go to decks 1-9 on deck select screen
@@ -98,7 +105,7 @@ DumpHand() {
 
 GoFace() {
     Loop, 13 {
-        MouseClick, left, 55+47*a_index, 324
+        MouseClick, left, 58+46*a_index, 324
         Sleep, 100
         MouseClick, left, 408, 109
         Sleep, 100
